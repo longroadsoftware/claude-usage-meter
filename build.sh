@@ -16,6 +16,7 @@ done
 lipo -create -output build/ClaudeUsageMeter build/ClaudeUsageMeter-arm64 build/ClaudeUsageMeter-x86_64
 build/ClaudeUsageMeter --icon build/AppIcon.iconset 72
 iconutil -c icns build/AppIcon.iconset -o "$OUT/Contents/Resources/AppIcon.icns"
+cp Resources/* "$OUT/Contents/Resources/"
 cp build/ClaudeUsageMeter "$OUT/Contents/MacOS/ClaudeUsageMeter"
 cat > "$OUT/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

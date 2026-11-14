@@ -29,12 +29,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in self?.refresh() })
         if CommandLine.arguments.contains("--settings") { openSettings() }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
-            guard let self = self, self.s.source == .automatic, self.last == nil, !ClaudeLogin.isSignedIn,
-                  !UserDefaults.standard.bool(forKey: "offeredSignIn") else { return }
-            UserDefaults.standard.set(true, forKey: "offeredSignIn")
-            self.signIn()
+        let offerSignIn = { [weak self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                guard let self = self, self.s.source == .automatic, self.last == nil, !ClaudeLogin.isSignedIn,
+                      !UserDefaults.standard.bool(forKey: "offeredSignIn") else { return }
+                UserDefaults.standard.set(true, forKey: "offeredSignIn")
+                self.signIn()
+            }
         }
+        if SplashController.shouldShowAutomatically { SplashController.shared.show(then: offerSignIn) }
+        else { offerSignIn() }
     }
 
     func scheduleTimer() {
@@ -147,6 +151,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         add(m, "Refresh Now", #selector(refresh), "r")
         if !compact {
             add(m, "Settings…", #selector(openSettings), ",")
+            add(m, "About Claude Usage Meter", #selector(showAbout))
             m.addItem(.separator())
             add(m, "Quit Claude Usage Meter", #selector(quit), "q")
         }
@@ -175,6 +180,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func signOut() { ClaudeLogin.signOut(); last = nil; refresh() }
 
     @objc func toggleShown() { s.show = s.show == .remaining ? .used : .remaining }
+    @objc func showAbout() { SplashController.shared.show() }
     @objc func quit() { NSApp.terminate(nil) }
 
     @objc func openSettings() {
@@ -301,6 +307,11 @@ if args.count >= 3, args[1] == "--once" {
     }
     try? v.png(size: 256)?.write(to: URL(fileURLWithPath: args[2]))
     s.show = original
+    exit(0)
+}
+if args.count >= 3, args[1] == "--splash" {
+    _ = NSApplication.shared
+    SplashController.renderPNG(to: args[2], dark: args.contains("--dark"))
     exit(0)
 }
 if args.count >= 3, args[1] == "--icon" {
