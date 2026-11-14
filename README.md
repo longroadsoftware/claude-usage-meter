@@ -16,6 +16,8 @@ Free, from [Long Road Software](https://longroadsoftware.com/?utm_source=github&
 
 > Unofficial. Not affiliated with or endorsed by Anthropic.
 
+**Free and open source (MIT).** No ads, no account with us, no tracking.
+
 ## Install
 
 **[⬇︎ Download the latest release](https://github.com/longroadsoftware/claude-usage-meter/releases/latest)**, unzip it, and drag **Claude Usage Meter** into Applications. Then open it.
