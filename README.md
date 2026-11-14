@@ -30,9 +30,10 @@ Requires macOS 14 Sonoma or later. Works on Apple silicon and Intel Macs, with a
 
 ## First run
 
-1. A **Sign in with Claude** window appears and your browser opens claude.ai.
-2. Click **Authorize**, copy the code the page shows, and paste it into the window.
-3. That's it. The meter appears at the top right of your screen and stays up to date.
+1. Your browser opens claude.ai. Click **Authorize**.
+2. That's it. The browser hands the sign-in back to the app, and the meter appears at the top right of your screen.
+
+Sign in with the Claude account **that has your Pro or Max plan**. If claude.ai says "Max, Ultra, or Pro is required", your browser is signed in to a different (free) Claude account: switch accounts on claude.ai, then choose **Sign in with Claude…** from the meter again.
 
 **If you use Claude Code**, there may be nothing to do: when Claude Code is signed in on the same Mac, the meter uses that automatically.
 

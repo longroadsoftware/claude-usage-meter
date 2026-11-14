@@ -157,9 +157,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func signIn() {
+        lastError = "Finish signing in in your browser…"; render()
         SignInPrompt.run { [weak self] err in
-            if let e = err { self?.lastError = e; self?.render() } else { self?.refresh() }
+            if let e = err { self?.lastError = e; self?.render(); self?.alert("Sign-in didn't finish", e) }
+            else { self?.lastError = nil; self?.refresh() }
         }
+    }
+    func alert(_ title: String, _ text: String) {
+        NSApp.activate(ignoringOtherApps: true)
+        let a = NSAlert(); a.messageText = title; a.informativeText = text; a.runModal()
     }
     @objc func signOut() { ClaudeLogin.signOut(); last = nil; refresh() }
 
