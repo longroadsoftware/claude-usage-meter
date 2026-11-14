@@ -29,6 +29,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in self?.refresh() })
         if CommandLine.arguments.contains("--settings") { openSettings() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            guard let self = self, self.s.source == .automatic, self.last == nil, !ClaudeLogin.isSignedIn,
+                  !UserDefaults.standard.bool(forKey: "offeredSignIn") else { return }
+            UserDefaults.standard.set(true, forKey: "offeredSignIn")
+            self.signIn()
+        }
     }
 
     func scheduleTimer() {
@@ -133,6 +139,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         if let e = lastError { m.addItem(withTitle: "Last check failed: \(e)", action: nil, keyEquivalent: "") }
         m.addItem(.separator())
+        if s.source == .automatic {
+            if ClaudeLogin.isSignedIn { add(m, "Sign Out of Claude", #selector(signOut)) }
+            else { add(m, "Sign in with Claude…", #selector(signIn)) }
+        }
         add(m, s.show == .remaining ? "Show Used Instead" : "Show Remaining Instead", #selector(toggleShown))
         add(m, "Refresh Now", #selector(refresh), "r")
         if !compact {
@@ -145,6 +155,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func add(_ m: NSMenu, _ title: String, _ sel: Selector, _ key: String = "") {
         let i = NSMenuItem(title: title, action: sel, keyEquivalent: key); i.target = self; m.addItem(i)
     }
+
+    @objc func signIn() {
+        SignInPrompt.run { [weak self] err in
+            if let e = err { self?.lastError = e; self?.render() } else { self?.refresh() }
+        }
+    }
+    @objc func signOut() { ClaudeLogin.signOut(); last = nil; refresh() }
 
     @objc func toggleShown() { s.show = s.show == .remaining ? .used : .remaining }
     @objc func quit() { NSApp.terminate(nil) }
@@ -202,7 +219,16 @@ struct SettingsView: View {
                     Text("The command must print either an OAuth token (sk-ant-oat…) or usage JSON.")
                         .font(.caption).foregroundStyle(.secondary)
                 } else {
-                    Text("Uses the login Claude Code saved on this Mac. Nothing is sent anywhere except Anthropic's usage endpoint.")
+                    HStack {
+                        Text(ClaudeLogin.isSignedIn ? "Signed in with Claude" : "Not signed in")
+                        Spacer()
+                        if ClaudeLogin.isSignedIn {
+                            Button("Sign Out") { ClaudeLogin.signOut(); refresh() }
+                        } else {
+                            Button("Sign in with Claude…") { SignInPrompt.run { _ in refresh() } }
+                        }
+                    }
+                    Text("Sign in once with your Claude account. If Claude Code is signed in on this Mac, that works too, with no sign-in needed.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Picker("Which limit", selection: $settings.limit) {

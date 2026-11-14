@@ -48,7 +48,7 @@ final class Settings: ObservableObject {
     @Published var notifyBelow: Double { didSet { d.set(notifyBelow, forKey: "notifyBelow") } }  // 0 = off
 
     private init() {
-        source = Source(rawValue: d.string(forKey: "source") ?? "") ?? .claudeCode
+        source = Source(rawValue: d.string(forKey: "source") ?? "") ?? .automatic
         command = d.string(forKey: "command") ?? ""
         refreshMinutes = d.object(forKey: "refreshMinutes") as? Double ?? 5
         requestTimeout = d.object(forKey: "requestTimeout") as? Double ?? 15

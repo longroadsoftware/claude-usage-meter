@@ -9,8 +9,11 @@ VERSION="$(cat VERSION 2>/dev/null || echo 1.0.0)"
 OUT="build/$NAME.app"
 
 rm -rf build && mkdir -p build/AppIcon.iconset "$OUT/Contents/MacOS" "$OUT/Contents/Resources"
-swiftc -O -o build/ClaudeUsageMeter Sources/*.swift -framework AppKit -framework SwiftUI \
-  -target "$(uname -m)-apple-macos14.0"
+for arch in arm64 x86_64; do
+  swiftc -O -o build/ClaudeUsageMeter-$arch Sources/*.swift -framework AppKit -framework SwiftUI \
+    -target "$arch-apple-macos14.0"
+done
+lipo -create -output build/ClaudeUsageMeter build/ClaudeUsageMeter-arm64 build/ClaudeUsageMeter-x86_64
 build/ClaudeUsageMeter --icon build/AppIcon.iconset 72
 iconutil -c icns build/AppIcon.iconset -o "$OUT/Contents/Resources/AppIcon.icns"
 cp build/ClaudeUsageMeter "$OUT/Contents/MacOS/ClaudeUsageMeter"
@@ -32,7 +35,7 @@ cat > "$OUT/Contents/Info.plist" <<PLIST
   <key>NSHumanReadableCopyright</key><string>MIT License</string>
 </dict></plist>
 PLIST
-codesign --force --options runtime -s "$SIGN_ID" "$OUT"
+codesign --force --options runtime --timestamp=none -s "$SIGN_ID" "$OUT" 2>/dev/null || codesign --force --options runtime -s "$SIGN_ID" "$OUT"
 echo "built $OUT ($VERSION)"
 
 if [ "${1:-}" = "--install" ]; then

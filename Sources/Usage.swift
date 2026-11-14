@@ -14,10 +14,10 @@ struct Reading { let limits: [Limit]; let fetched: Date }
 struct UsageError: Error { let text: String }
 
 enum Source: String, CaseIterable, Identifiable {
-    case claudeCode = "claudeCode"   // the Claude Code login on this Mac (Keychain or ~/.claude/.credentials.json)
-    case command = "command"         // any shell command that prints a token or usage JSON
+    case automatic = "automatic"     // this app's own "Sign in with Claude", else Claude Code's login if it's current
+    case command = "command"         // advanced: any shell command that prints a token or usage JSON
     var id: String { rawValue }
-    var title: String { self == .claudeCode ? "Claude Code login on this Mac" : "Custom command" }
+    var title: String { self == .automatic ? "Automatic (recommended)" : "Custom command (advanced)" }
 }
 
 enum UsageAPI {
@@ -25,11 +25,15 @@ enum UsageAPI {
 
     static func fetch(settings s: Settings) -> Result<Reading, UsageError> {
         switch s.source {
-        case .claudeCode:
-            switch ClaudeCodeToken.read() {
-            case .failure(let e): return .failure(e)
-            case .success(let t): return fromToken(t, timeout: s.requestTimeout)
+        case .automatic:
+            if ClaudeLogin.isSignedIn {
+                switch ClaudeLogin.token(timeout: s.requestTimeout) {
+                case .failure(let e): return .failure(e)
+                case .success(let t): return fromToken(t, timeout: s.requestTimeout)
+                }
             }
+            if case .success(let t) = ClaudeCodeToken.read() { return fromToken(t, timeout: s.requestTimeout) }
+            return .failure(UsageError(text: "Not signed in. Choose \"Sign in with Claude…\" from the menu."))
         case .command:
             let cmd = s.command.trimmingCharacters(in: .whitespacesAndNewlines)
             if cmd.isEmpty { return .failure(UsageError(text: "No command set (Settings > Source)")) }
@@ -57,7 +61,7 @@ enum UsageAPI {
             if let err = err { result = .failure(UsageError(text: err.localizedDescription)); return }
             let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
             if code == 401 || code == 403 {
-                result = .failure(UsageError(text: "Login rejected (HTTP \(code)). Run `claude` once to refresh it."))
+                result = .failure(UsageError(text: "Login rejected (HTTP \(code)). Sign in with Claude again."))
                 return
             }
             guard code == 200, let data = data else { result = .failure(UsageError(text: "HTTP \(code)")); return }
