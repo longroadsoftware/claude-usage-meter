@@ -33,11 +33,29 @@ Requires macOS 14 Sonoma or later. Works on Apple silicon and Intel Macs, with a
 1. Your browser opens claude.ai. Click **Authorize**.
 2. That's it. The browser hands the sign-in back to the app, and the meter appears at the top right of your screen.
 
-Sign in with the Claude account **that has your Pro or Max plan**. If claude.ai says "Max, Ultra, or Pro is required", your browser is signed in to a different (free) Claude account: switch accounts on claude.ai, then choose **Sign in with Claude…** from the meter again.
+Sign in with the Claude account **that has your Pro or Max plan**.
 
 **If you use Claude Code**, there may be nothing to do: when Claude Code is signed in on the same Mac, the meter uses that automatically.
 
 Your sign-in is stored in your Mac's Keychain and is only used to read your usage. To remove it, click the meter and choose **Sign Out of Claude**.
+
+## Troubleshooting
+
+**claude.ai asks you to upgrade, but you already have Pro or Max.**
+Your browser is signed in to claude.ai with a *different* Claude account, one without a plan. It's common if you have a work and a personal account. claude.ai checks whichever account the browser is using, sees no plan, and offers an upgrade. Your plan is fine.
+
+To fix it:
+1. On claude.ai, click your name at the bottom left and choose **Log out**.
+2. Sign in with the account that has your plan.
+3. Click the meter and choose **Sign in with Claude…** again.
+
+To keep your other account signed in, open a private window instead (⌘⇧N in Chrome, ⇧⌘N in Safari). Sign in there with the right account, then choose **Sign in with Claude…** while that window is in front.
+
+**Not sure which account has your plan?** On claude.ai, open **Settings → Billing**. The account with the plan shows it there.
+
+**"Sign-in timed out."** The meter waits 5 minutes for you to click Authorize. Choose **Sign in with Claude…** again.
+
+**The meter says (stale).** It couldn't check for a while, usually because the Mac was offline or asleep. It catches up on its own. Click the meter for the last error, or choose **Refresh Now**.
 
 ## Settings
 

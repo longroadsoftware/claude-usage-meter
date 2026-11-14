@@ -158,6 +158,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc func signIn() {
         lastError = "Finish signing in in your browser…"; render()
+        if !UserDefaults.standard.bool(forKey: "shownAccountTip") {
+            UserDefaults.standard.set(true, forKey: "shownAccountTip")
+            alert("Sign in with Claude",
+                  "Your browser will open claude.ai. Use the Claude account that has your Pro or Max plan.\n\nIf it asks you to upgrade even though you have a plan, the browser is signed in to a different Claude account. Log out on claude.ai, sign in with the right one, and choose Sign in with Claude… again.")
+        }
         SignInPrompt.run { [weak self] err in
             if let e = err { self?.lastError = e; self?.render(); self?.alert("Sign-in didn't finish", e) }
             else { self?.lastError = nil; self?.refresh() }
