@@ -12,7 +12,7 @@ A tiny macOS menu bar app that shows how much of your **Claude plan's usage limi
 - Optional Dock tile, and an optional notification when you're running low.
 - No telemetry and no third-party servers. It only talks to Anthropic.
 
-Free, from [Long Road Software](https://longroadsoftware.com/?utm_source=github&utm_medium=readme&utm_campaign=claude-usage-meter), makers of dependable Mac software for video creators.
+Free, from [Long Road Software](https://longroadsoftware.com/?utm_source=github&utm_medium=readme&utm_campaign=claude-usage-meter), makers of dependable apps for Mac, Windows, iPhone and more.
 
 > Unofficial. Not affiliated with or endorsed by Anthropic.
 

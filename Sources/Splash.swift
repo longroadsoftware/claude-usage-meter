@@ -22,7 +22,7 @@ enum LRS {
         let id: String, name: String, blurb: String, status: String?, url: URL
     }
     static let products: [Product] = [
-        .init(id: "mfs", name: "MediaFlowSwift", blurb: "Footage manager for Mac. Import, organize and find every clip.",
+        .init(id: "mfs", name: "MediaFlowSwift", blurb: "Footage manager for Mac, with a Windows version on the way. Import, organize and find every clip.",
               status: nil, url: link("https://mediaflowswift.com/", "mediaflowswift")),
         .init(id: "pc", name: "Proof Copy", blurb: "Copies camera cards to your drives and proves every file arrived intact.",
               status: "Coming soon", url: link("https://longroadsoftware.com/proof-copy/", "proofcopy")),
@@ -50,7 +50,7 @@ struct SplashView: View {
                 Text("Free, from **Long Road Software**")
                     .font(.system(size: 14))
                     .padding(.top, 2)
-                Text("We make dependable Mac software for video creators, and we give away tools like this one. If the meter saves you from a surprise lockout, take a look at what else we build.")
+                Text("We build dependable apps for Mac, Windows, iPhone and more, and we give away small tools like this one. If the meter saves you from a surprise lockout, take a look at what else we make.")
                     .font(.system(size: 12.5)).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 28)
