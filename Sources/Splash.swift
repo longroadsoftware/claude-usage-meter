@@ -50,7 +50,7 @@ struct SplashView: View {
                 Text("Free, from **Long Road Software**")
                     .font(.system(size: 14))
                     .padding(.top, 2)
-                Text("We build dependable apps for Mac, Windows, iPhone and more, and we give away small tools like this one. If the meter saves you from a surprise lockout, take a look at what else we make.")
+                Text("We make dependable software, starting on the Mac, with Windows and iPhone apps on the way. We give away small tools like this one. If the meter saves you from a surprise lockout, take a look at what else we make.")
                     .font(.system(size: 12.5)).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 28)
