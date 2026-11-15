@@ -60,7 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let r = UsageAPI.fetch(settings: settings)
             DispatchQueue.main.async {
                 switch r {
-                case .success(let reading): self.last = reading; self.lastError = nil
+                case .success(let reading): self.last = reading; self.lastError = nil; self.scheduleResetCheck()
                 case .failure(let e): self.lastError = e.text
                 }
                 self.render()
@@ -71,13 +71,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     var isStale: Bool {
         guard let l = last else { return lastError != nil }
+        if let p = s.pick(l), let r = p.resets, r < Date() { return true }
         return Date().timeIntervalSince(l.fetched) > s.staleMinutes * 60
+    }
+
+    /// Re-check right after the shown limit resets, instead of waiting for the next timer tick.
+    var resetTimer: Timer?
+    func scheduleResetCheck() {
+        resetTimer?.invalidate()
+        guard let l = last.flatMap({ s.pick($0) }), let r = l.resets, r > Date() else { return }
+        resetTimer = Timer.scheduledTimer(withTimeInterval: r.timeIntervalSinceNow + 30, repeats: false) { [weak self] _ in self?.refresh() }
     }
 
     // MARK: drawing
 
     func render() {
-        let lim = last.flatMap { s.pick($0) }
+        var lim = last.flatMap { s.pick($0) }
+        if let l = lim, let r = l.resets, r < Date() { lim = nil }       // that limit has reset; the old % is meaningless
         let rem = lim?.remaining
         let shown = rem.map { s.show == .remaining ? $0.rounded(.down) : (100 - $0).rounded(.up) }
         let level = rem.map { s.level(remaining: $0) }
@@ -131,7 +141,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let rd = last {
             for l in rd.limits {
                 var line = "\(l.label): \(Int(l.remaining.rounded(.down)))% remaining · \(Int(l.used.rounded(.up)))% used"
-                if let r = l.resets { line += " · resets \(Self.when.string(from: r))" }
+                if let r = l.resets { line += r < Date() ? " · reset at \(Self.when.string(from: r)), new reading pending" : " · resets \(Self.when.string(from: r))" }
                 let mi = NSMenuItem(title: line, action: nil, keyEquivalent: "")
                 if let p = s.pick(rd), p == l { mi.state = .on }
                 m.addItem(mi)

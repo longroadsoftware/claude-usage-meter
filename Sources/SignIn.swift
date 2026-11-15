@@ -12,9 +12,11 @@ enum ClaudeLogin {
     static let authorizeURL = "https://claude.com/cai/oauth/authorize"
     static let tokenURLs = ["https://platform.claude.com/v1/oauth/token"]
     static let successURL = "https://platform.claude.com/oauth/code/success?app=claude-code"
-    static let scopeList = ["org:create_api_key", "user:profile", "user:inference", "user:sessions:claude_code",
-                            "user:mcp_servers", "user:file_upload"]
-    static var scopes: String { scopeList.joined(separator: " ") }
+    // Same split as Claude Code: refreshes may only ask for the user:* scopes; org:create_api_key is sign-in only.
+    static let refreshScopeList = ["user:profile", "user:inference", "user:sessions:claude_code", "user:mcp_servers",
+                                   "user:file_upload", "user:plugins"]
+    static var scopes: String { (["org:create_api_key"] + refreshScopeList).joined(separator: " ") }
+    static var refreshScopes: String { refreshScopeList.joined(separator: " ") }
     static let keychainService = "Claude Usage Meter"
     static let keychainAccount = "claude-oauth"
 
@@ -65,7 +67,11 @@ enum ClaudeLogin {
     static func token(timeout: Double) -> Result<String, UsageError> {
         guard var t = load() else { return .failure(UsageError(text: "Not signed in. Choose \"Sign in with Claude…\".")) }
         if t.expiresAt - 120 > Date().timeIntervalSince1970 { return .success(t.access) }
-        switch post(["grant_type": "refresh_token", "refresh_token": t.refresh, "client_id": clientID, "scope": scopes]) {
+        var r = post(["grant_type": "refresh_token", "refresh_token": t.refresh, "client_id": clientID, "scope": refreshScopes])
+        if case .failure(let e) = r, e.text.contains("invalid_scope") {   // older grants: let the server keep the original scopes
+            r = post(["grant_type": "refresh_token", "refresh_token": t.refresh, "client_id": clientID])
+        }
+        switch r {
         case .failure(let e):
             if e.text.contains("invalid_grant") { signOut(); return .failure(UsageError(text: "Sign-in expired. Sign in again.")) }
             return .failure(e)
